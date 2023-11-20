@@ -1,19 +1,10 @@
 const button = document.querySelector('#submit-search');
 const inputField = document.querySelector('#cityName');
-// Check if script is read by the browser!
-console.log("script is running")
-// import data from different files
+
 import API from "./config.js";
 
-// getting my container element
 const cityNameContainer = document.querySelector('.city-info')
-// Weekdays listed in the order used by the Date object in JavaScript
 const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-// Check if weekdays are correctly displayed
-console.log(weekdays);
-// check if API is correctly imported
-console.log(API)
 
 async function fetchWeatherData(cityName) {
     try {
@@ -26,63 +17,100 @@ async function fetchWeatherData(cityName) {
 }
 
 function createCard(container, dayOfTheWeek, weatherData, i) {
-    const card = document.createElement('div');
-    card.classList.add("card");
-
-    if (i === 0) card.classList.add("main-card");
+    const card = createCardElement(i);
     container.appendChild(card);
 
+    const imageBox = createImageBox(card);
+    createCardImg(imageBox, weatherData.day.condition.icon);
+
+    const contentBox = createContentBox(card);
+    createCardHeader(contentBox, dayOfTheWeek);
+    createTempDescription(contentBox, weatherData.day.condition.text);
+
+    const currentTempBox = createCurrentTempBox(contentBox);
+    createCurrentTemp(currentTempBox, weatherData.day.avgtemp_c);
+
+    const minMaxTemperatures = createMinMaxTemperatures(contentBox);
+    createMinMaxTempHeader(minMaxTemperatures);
+    createMinMaxTemp(minMaxTemperatures, 'Min', weatherData.day.mintemp_c);
+    createMinMaxTemp(minMaxTemperatures, 'Max', weatherData.day.maxtemp_c);
+}
+
+function createCardElement(i) {
+    const card = document.createElement('div');
+    card.classList.add("card");
+    if (i === 0) card.classList.add("main-card");
+    return card;
+}
+
+function createImageBox(card) {
     const imageBox = document.createElement('div');
     imageBox.classList.add("imgBx");
     card.appendChild(imageBox);
+    return imageBox;
+}
 
+function createCardImg(imageBox, iconSrc) {
     const cardImg = document.createElement('img');
-    cardImg.src = weatherData.day.condition.icon;
+    cardImg.src = iconSrc;
     imageBox.appendChild(cardImg);
+}
 
+function createContentBox(card) {
     const contentBox = document.createElement("div");
     contentBox.classList.add("contentBx");
     card.appendChild(contentBox);
+    return contentBox;
+}
 
+function createCardHeader(contentBox, dayOfTheWeek) {
     const cardHeader = document.createElement("h2");
     cardHeader.innerHTML = dayOfTheWeek;
     contentBox.appendChild(cardHeader);
+}
 
-    console.log(weatherData.day.condition.text);
+function createTempDescription(contentBox, conditionText) {
     const tempDescription = document.createElement("h4");
-    tempDescription.innerHTML = weatherData.day.condition.text;
+    tempDescription.innerHTML = conditionText;
     contentBox.appendChild(tempDescription);
+}
 
+function createCurrentTempBox(contentBox) {
     const currentTempBox = document.createElement("div");
     currentTempBox.classList.add("color");
     contentBox.appendChild(currentTempBox);
+    return currentTempBox;
+}
 
+function createCurrentTemp(currentTempBox, avgTemp) {
     const currentTempHeader = document.createElement("h3");
-    currentTempHeader.innerHTML = "Temp:"
+    currentTempHeader.innerHTML = "Temp:";
     currentTempBox.appendChild(currentTempHeader);
 
     const currentTemp = document.createElement("span");
     currentTemp.classList.add("current-temp");
-    currentTemp.innerHTML = weatherData.day.avgtemp_c + "°C";
+    currentTemp.innerHTML = avgTemp + "°C";
     currentTempBox.appendChild(currentTemp);
+}
 
+function createMinMaxTemperatures(contentBox) {
     const minMaxTemperatures = document.createElement("div");
     minMaxTemperatures.classList.add("details");
     contentBox.appendChild(minMaxTemperatures);
+    return minMaxTemperatures;
+}
 
+function createMinMaxTempHeader(minMaxTemperatures) {
     const minMaxTempHeader = document.createElement("h3");
-    minMaxTempHeader.innerHTML = "More:"
+    minMaxTempHeader.innerHTML = "More:";
     minMaxTemperatures.appendChild(minMaxTempHeader);
+}
 
-    const minTemp = document.createElement("span");
-    minTemp.classList.add("min-temp")
-    minTemp.innerHTML = weatherData.day.mintemp_c + "°C";
-    minMaxTemperatures.appendChild(minTemp);
-
-    const maxTemp = document.createElement("span");
-    maxTemp.classList.add("max-temp")
-    maxTemp.innerHTML = weatherData.day.maxtemp_c + "°C";
-    minMaxTemperatures.appendChild(maxTemp);
+function createMinMaxTemp(minMaxTemperatures, label, temp) {
+    const tempElement = document.createElement("span");
+    tempElement.classList.add(label.toLowerCase() + "-temp");
+    tempElement.innerHTML = temp + "°C";
+    minMaxTemperatures.appendChild(tempElement);
 }
 
 async function handleButtonClick() {
@@ -94,7 +122,6 @@ async function handleButtonClick() {
             // Fetch weather data
             const data = await fetchWeatherData(theNameOfTheCity);
 
-            // Update the UI with fetched data
             cityNameContainer.textContent = `${data.location.name}, ${data.location.country}`;
 
             // Loop to create cards
@@ -105,7 +132,6 @@ async function handleButtonClick() {
                 createCard(container, dayOfTheWeek, data.forecast.forecastday[i]);
             }
         } catch (error) {
-            // Handle errors during weather data fetching
             console.error("An unexpected error occurred:", error);
         }
     }
