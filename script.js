@@ -1,13 +1,12 @@
+const button = document.querySelector('#submit-search');
+const inputField = document.querySelector('#cityName');
 // Check if script is read by the browser!
 console.log("script is running")
 // import data from different files
 /*import WMO_CODES from "./wmo_codes.js";*/
 import API from "./config.js";
 
-// Getting my button element
-const button = document.querySelector('#submit-search');
-// Getting my input field element
-const inputField = document.querySelector('#cityName');
+
 //getting my container element
 const cityNameContainer = document.querySelector('.city-info')
 // Weekdays listed in the order used by the Date object in javascript
@@ -20,44 +19,63 @@ console.log(weekdays);
 // check if API is correctly imported
 console.log(API)
 
-// add eventlistener to input field
-inputField.addEventListener('keyup', function(event) {
-    // get the current value after the user submitted the city name
+async function fetchWeatherData(cityName) {
+    try {
+        const response = await fetch("http://api.weatherapi.com/v1/forecast.json?key=" + API.key + "&q=" + cityName + "&days=7&aqi=no&alerts=no");
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+// Add event listener to input field
+inputField.addEventListener('keyup', async function(event) {
+    // Get the current value after the user submits the city name
     const theNameOfTheCity = document.querySelector("#cityName").value;
 
-    // see if event listener is triggered
-    console.log("Enter submission")
+    // See if the event listener is triggered
+    console.log("Enter submission");
 
-    // check if the keyup action is used on an Enter key
+    // Check if the keyup action is used on an Enter key
     if (event.code === "Enter") {
+        // Check if the value of the input field is not empty
+        const cityName = theNameOfTheCity.trim();
+        if (cityName) {
+            try {
+                // Make the API call to get the weather data based on the city
+                const data = await fetchWeatherData(cityName);
 
-        // check if the value of the input field is not empty
-    if (document.getElementById('cityName').value.trim()) {
-        // Make the api call to get the weather Data based on the City
-        fetch("http://api.weatherapi.com/v1/forecast.json?key=" + API.key + "&q=" + theNameOfTheCity + "&days=7&aqi=no&alerts=no")
-        // Transform the response in a readable javascript format
-        .then(response => response.json())
-        // final formatted data from the API call
-        .then(data => {
-            // Check if data is received
-            console.log(data)
+                // Check if data is received
+                console.log(data);
 
-
-            // check if the data is not giving back an error
-            if(data.error) {
-                // stop the event from continuing the code if there is an error
-                return alert("Hey are you sure you are not holding up your map upside down?")
-                console.log("check if code stops")
-            } else {
-                // continue with the code if there are no errors
+                // Continue with the code if there are no errors
                 const container = document.querySelector(".container");
+
                 // Remove existing children if there are any in the <element class="container">
                 while (container.lastChild) {
                     container.removeChild(container.lastChild);
-                };
+                }
+
+                // Add more code here to handle the data as needed
+            } catch (error) {
+                // Handle errors
+                if (error && error.error) {
+                    // Stop the event from continuing the code if there is an error
+                    alert("Hey, are you sure you are not holding up your map upside down?");
+                    console.log("Check if code stops");
+                } else {
+                    // Handle other types of errors if needed
+                    console.error("An unexpected error occurred:", error);
+                }
+            }
+        }
+    }
+});
+       
                 
                 // I also found this option to remove the children (but it removes all html content though)
-                container.innerHTML = ""
+                /*container.innerHTML = ""*/
 
                 // container.children.forEach(child => {
                 //     container.remove(child);
@@ -150,16 +168,9 @@ inputField.addEventListener('keyup', function(event) {
                 maxT.classList.add("max-temp")
                 maxT.innerHTML = data.forecast.forecastday[i].day.maxtemp_c + "°C";
                 minMax.appendChild(maxT);
-                }
-            }
-        }).catch(err => {
-            //not working
-            // alert("Hey are you sure you are not holding up your map upside down?")
-        })
-    }
-    }
-})
-
+                };
+            
+        
 // add eventlistener to button
 button.addEventListener('click', function() {
     const theNameOfTheCity = document.querySelector("#cityName").value;
@@ -256,11 +267,7 @@ button.addEventListener('click', function() {
                 minMaxTemperatures.appendChild(maxTemp);
             }
         }
-    })
-    .catch(err => {
-        //not working
-        // alert("Hey are you sure you are not holding up your map upside down?")
-    })
+    });
 })
 
 // This is a weather web application made for educational purposes. Please do not commercialize this project in any way whatsoever.
