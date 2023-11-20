@@ -13,7 +13,7 @@ const cityNameContainer = document.querySelector('.city-info')
 const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 // In case I want to switch to a different format:
-const weekdays2 = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+/*const weekdays2 = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];*/
 // Check if weekdays are correctly displayed
 console.log(weekdays);
 // check if API is correctly imported
@@ -29,61 +29,22 @@ async function fetchWeatherData(cityName) {
     }
 }
 
-// Add event listener to input field
-inputField.addEventListener('keyup', async function(event) {
-    // Get the current value after the user submits the city name
-    const theNameOfTheCity = document.querySelector("#cityName").value;
+async function handleButtonClick() {
+    // Get the city name from the input field
+    const theNameOfTheCity = inputField.value.trim();
 
-    // See if the event listener is triggered
-    console.log("Enter submission");
-
-    // Check if the keyup action is used on an Enter key
-    if (event.code === "Enter") {
-        // Check if the value of the input field is not empty
-        const cityName = theNameOfTheCity.trim();
-        if (cityName) {
-            try {
-                // Make the API call to get the weather data based on the city
-                const data = await fetchWeatherData(cityName);
-
-                // Check if data is received
-                console.log(data);
-
-                // Continue with the code if there are no errors
-                const container = document.querySelector(".container");
-
-                // Remove existing children if there are any in the <element class="container">
-                while (container.lastChild) {
-                    container.removeChild(container.lastChild);
-                }
-
-                // Add more code here to handle the data as needed
-            } catch (error) {
-                // Handle errors
-                if (error && error.error) {
-                    // Stop the event from continuing the code if there is an error
-                    alert("Hey, are you sure you are not holding up your map upside down?");
-                    console.log("Check if code stops");
-                } else {
-                    // Handle other types of errors if needed
-                    console.error("An unexpected error occurred:", error);
-                }
-            }
+    if (theNameOfTheCity) {
+        try {
+            // Fetch weather data and update the UI
+            const data = await fetchWeatherData(theNameOfTheCity);
+            cityNameContainer.textContent = `${data.location.name}, ${data.location.country}`;
+            container.innerHTML = ''; // Clear existing content in the container
+        } catch (error) {
+            // Handle errors during weather data fetching
+            console.error("An unexpected error occurred:", error);
         }
     }
-});
-       
-                
-                // I also found this option to remove the children (but it removes all html content though)
-                /*container.innerHTML = ""*/
-
-                // container.children.forEach(child => {
-                //     container.remove(child);
-                // })
-                
-                // Display the location in the browser as "City, Country"
-                cityNameContainer.textContent = data.location.name + ", " + data.location.country;
-
+}
                 // Create cards for each days (first 5 days) of the week.
                 // if I want to have 7 days, I just need to augment the number in the loop condition from 5 to 7
                 for(let i= 0; i < 5; i++) {
@@ -116,9 +77,6 @@ inputField.addEventListener('keyup', async function(event) {
                     cardImg.alt = "Icon describing the following weather: " + data.forecast.forecastday[i].day.condition.text;
                     initialContentBeforeSlideAnimation.appendChild(cardImg);
 
-
-
-                    
                     const contentBox = document.createElement("div");
                     contentBox.classList.add("contentBx");
                     card.appendChild(contentBox);
@@ -170,30 +128,6 @@ inputField.addEventListener('keyup', async function(event) {
                 minMax.appendChild(maxT);
                 };
             
-        
-// add eventlistener to button
-button.addEventListener('click', function() {
-    const theNameOfTheCity = document.querySelector("#cityName").value;
-    console.log("clicked")
-    fetch("http://api.weatherapi.com/v1/forecast.json?key=" + API.key + "&q=" + theNameOfTheCity + "&days=7&aqi=no&alerts=no")
-    .then(response => response.json())
-    .then(data => {
-        console.log(data)
-        if(data.error) {
-            return alert("Hey are you sure you are not holding up your map upside down?")
-            console.log("check if code stops")
-        } else {
-            const container = document.querySelector(".container");
-            while (container.lastChild) {
-                container.removeChild(container.lastChild);
-            };
-
-            container.innerHTML = ""
-            // container.children.forEach(child => {
-            //     container.remove(child);
-            // })
-            
-            cityNameContainer.textContent = data.location.name + ", " + data.location.country;
 
             for(let i= 0; i < 5; i++) {
                 const container = document.querySelector('.container');
@@ -266,9 +200,17 @@ button.addEventListener('click', function() {
                 maxTemp.innerHTML = data.forecast.forecastday[i].day.maxtemp_c + "°C";
                 minMaxTemperatures.appendChild(maxTemp);
             }
-        }
-    });
-})
+        
+
+inputField.addEventListener('keyup', function (event) {
+    if (event.code === 'Enter') {
+        handleButtonClick();
+    }
+});
+
+button.addEventListener('click', function () {
+    handleButtonClick();
+});
 
 // This is a weather web application made for educational purposes. Please do not commercialize this project in any way whatsoever.
 // Made by a BeCode technical coach whom had a lot of fun making "bad code", and improved by the very learners of this class.
